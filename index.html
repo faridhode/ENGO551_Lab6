@@ -24,6 +24,7 @@
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; OpenStreetMap contributors'
         }).addTo(map);
+		map.setView([51.05, -114.070], 10);
 
         // Initialize polyline drawing toolbar
         var drawControl = new L.Control.Draw({
