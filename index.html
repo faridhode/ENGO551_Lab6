@@ -1,84 +1,117 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Time to draw!!!</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
-    <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
-</head>
-<body>
 
-	<h1>
-	Time to draw!
-	</h1>
+    <head>
+        
+        <meta charset=utf-8 />
+
+        <title>Time to draw!</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+        <!-- leaflet -->
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+		integrity="sha256-kLaT2GOSpHechhsozzB+flnD+zUyjE2LlfWPgU04xyI="
+		crossorigin=""/>
+
+		<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+		integrity="sha256-WBkoXOwTeyKclOHuWtc+i2uENFpDZ9YPdf5Hf+D7ewM="
+		crossorigin=""></script>
+
+        
+        <!-- turf.js library -->
+        <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+
+        <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css" />
+
+    </head>
+
+
+    <body>
+
 	
-	<p>
-	Welcome to our wondrous and magical website to draw all the types of lines you can imagine. 	
-	</p>
-    <div id="map" style="width: 50%; height: 600px;"></div>
+        <h1> Time to draw! </h1>
+	
+	
+        <p> Welcome to our wondrous and magical website to draw all the types of lines you can imagine. </p>
 
-    <button onclick="simplifyPolyline()">Simplify polyline</button>
-    <button onclick="removePolyline()">Remove polyline</button>
+   
+        <div id="map" style="height: 600px;"></div>
 
-    <script>
-        // Initialize map
-        var map = L.map('map').setView([51.505, -0.09], 13);
+    
+        <button onclick="simplifyPolyline()">Simplify polyline</button>
+    
+        <button onclick="removePolyline()">Remove polyline</button>
 
-        // Add tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data &copy; OpenStreetMap contributors'
-        }).addTo(map);
-		map.setView([51.05, -114.070], 10);
+        <script>
 
-        // Initialize drawnItems layer group for drawn polylines
-        var drawnItems = new L.FeatureGroup();
-        map.addLayer(drawnItems);
+            // creating the map
+            var map = L.map('map').setView([51.505, -0.09], 13);
+
+            // adding the tile layer map
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data &copy; OpenStreetMap contributors'
+            }).addTo(map);
+		    map.setView([51.05, -114.070], 10);
+
+            // creating a layer to store polylines in
+            var drawnItems = new L.FeatureGroup();
+            map.addLayer(drawnItems);
 		
-        // Initialize polyline drawing toolbar
-        var drawControl = new L.Control.Draw({
-            edit: {
-                featureGroup: drawnItems
-            },
-            draw: {
-                polyline: true,
-                polygon: false,
-                circle: false,
-                rectangle: false,
-                marker: false
-            }
-        });
-        map.addControl(drawControl);
-
-		// Add drawn polyline as layer: 
-		
-		map.on(L.Draw.Event.CREATED, function (event) {
-            var drawnPolyline = event.layer;
-            drawnItems.addLayer(drawnPolyline);
-            var coordinates = drawnPolyline.getLatLngs().map(function(latLng) {
-                return [latLng.lng, latLng.lat];
+            // creating a polyline toolbar
+            var drawControl = new L.Control.Draw({
+                edit: {
+                    featureGroup: drawnItems
+                },
+                draw: {
+                    polyline: true,
+                    polygon: false,
+                    circle: false,
+                    rectangle: false,
+                    marker: false
+                }
             });
-            var polyline = turf.lineString(coordinates);
-            console.log(polyline);
-        });
-		
-        // Simplify polyline function
-        function simplifyPolyline() {
-            var drawnPolyline = drawnItems.getLayers()[0];
-            if (drawnPolyline) {
-                var simplifiedPolyline = turf.simplify(drawnPolyline.toGeoJSON(), { tolerance: 0.01, highQuality: false });
-                drawnItems.clearLayers();
-                L.geoJSON(simplifiedPolyline).addTo(drawnItems);
-            }
-        }
 
-        // Remove polyline function
-        function removePolyline() {
-            drawnItems.clearLayers();
-        }
-    </script>
-</body>
+            map.addControl(drawControl);
+
+		    // adding the drawn polyline to the layer 
+            map.on(L.Draw.Event.CREATED, function (event) {
+
+                var drawnPolyline = event.layer;
+                drawnItems.addLayer(drawnPolyline);
+
+                var coordinates = drawnPolyline.getLatLngs().map(function(latLng) {
+                    return [latLng.lng, latLng.lat];
+                });
+
+                var polyline = turf.lineString(coordinates);
+                console.log(polyline);
+
+            });
+		
+            // simplifies polyline by keeping only the starting and ending vertices and deleting the rest
+            function simplifyPolyline() {
+
+                var drawnPolyline = drawnItems.getLayers()[0];
+
+                if (drawnPolyline) {
+                    var simplifiedPolyline = turf.simplify(drawnPolyline.toGeoJSON(), { tolerance: 0.01, highQuality: false });
+                    drawnItems.clearLayers();
+                    L.geoJSON(simplifiedPolyline).addTo(drawnItems);
+                }
+
+            }
+
+            // clearing the map of all drawn items
+            function removePolyline() {
+                drawnItems.clearLayers();
+            }
+
+        </script>
+
+    </body>
+
 </html>
